@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>门店销售TOP10分析 - 惠民零售集团</title>
+    <script src="../js/echarts.min.js"></script>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: "Microsoft YaHei", "微软雅黑", sans-serif; margin: 0; padding: 20px;
+               background: #f2f4f7; color: #303133; }
+        .header { background: linear-gradient(90deg, #2f7ed8, #1c5aa0); color: #fff;
+                  padding: 16px 24px; border-radius: 8px; margin-bottom: 16px; }
+        .header h2 { margin: 0; font-size: 20px; font-weight: 600; }
+        .header p { margin: 6px 0 0; font-size: 13px; opacity: .85; }
+        .card { background: #fff; border-radius: 8px; padding: 16px 20px;
+                box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 16px; }
+        .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .toolbar label { font-size: 14px; color: #606266; }
+        .toolbar input, .toolbar select { padding: 6px 10px; font-size: 14px;
+                border: 1px solid #dcdfe6; border-radius: 4px; outline: none; }
+        .toolbar input:focus, .toolbar select:focus { border-color: #2f7ed8; }
+        .toolbar button { padding: 7px 22px; font-size: 14px; color: #fff;
+                background: #2f7ed8; border: none; border-radius: 4px; cursor: pointer; }
+        .toolbar button:hover { background: #1c5aa0; }
+        #chart { width: 100%; height: 520px; }
+        #statBar { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 10px; }
+        .stat { flex: 1 1 160px; background: #f7f9fc; border-left: 4px solid #2f7ed8;
+                border-radius: 4px; padding: 10px 14px; }
+        .stat .k { font-size: 13px; color: #909399; }
+        .stat .v { font-size: 20px; font-weight: 600; color: #2f7ed8; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+        th, td { border: 1px solid #ebeef5; padding: 8px 10px; text-align: center; }
+        th { background: #f5f7fa; color: #606266; font-weight: 600; }
+        tbody tr:hover { background: #f7f9fc; }
+        .api { font-family: Consolas, monospace; font-size: 12px; color: #909399;
+               background: #f5f7fa; padding: 8px 12px; border-radius: 4px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h2>惠民零售集团 · 门店销售额 TOP10 分析</h2>
+    <p>数据来源：Hive 数仓 hui_min_dws.dws_store_sales_daily ｜ 加工链路：ODS → DWD → DWS</p>
+</div>
+
+<div class="card">
+    <div class="toolbar">
+        <label>业务日期：</label>
+        <input type="date" id="dt" value="2024-05-20">
+        <label>所属大区：</label>
+        <select id="region">
+            <option value="all">全部</option>
+            <option value="华北">华北</option>
+            <option value="华东">华东</option>
+            <option value="华南">华南</option>
+        </select>
+        <label>图表类型：</label>
+        <select id="chartType">
+            <option value="bar">柱状图</option>
+            <option value="pie">饼图</option>
+        </select>
+        <label>显示条数：</label>
+        <select id="topN">
+            <option value="5">TOP5</option>
+            <option value="10" selected>TOP10</option>
+            <option value="20">TOP20</option>
+        </select>
+        <button id="queryBtn">查询</button>
+    </div>
+    <div id="statBar"></div>
+</div>
+
+<div class="card">
+    <div id="chart"></div>
+</div>
+
+<div class="card">
+    <h3 style="margin:0 0 8px;font-size:15px;">明细数据</h3>
+    <table id="dataTable">
+        <thead>
+        <tr><th>排名</th><th>门店ID</th><th>门店名称</th><th>大区</th>
+            <th>销售额(元)</th><th>销量(件)</th><th>订单数</th><th>客单价(元)</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="api" id="apiInfo"></div>
+</div>
+
+<script>
+    var chart = echarts.init(document.getElementById('chart'));
+    // 响应式：窗口尺寸变化时重绘图表
+    window.addEventListener('resize', function () { chart.resize(); });
+
+    function fmtMoney(v) {
+        return Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function renderStat(list) {
+        var total = 0, qty = 0, cnt = 0;
+        list.forEach(function (d) { total += Number(d.salesAmount); qty += Number(d.salesQuantity); cnt += Number(d.orderCnt); });
+        document.getElementById('statBar').innerHTML =
+            '<div class="stat"><div class="k">门店数量</div><div class="v">' + list.length + '</div></div>' +
+            '<div class="stat"><div class="k">销售额合计（元）</div><div class="v">' + fmtMoney(total) + '</div></div>' +
+            '<div class="stat"><div class="k">销量合计（件）</div><div class="v">' + qty + '</div></div>' +
+            '<div class="stat"><div class="k">订单数合计</div><div class="v">' + cnt + '</div></div>' +
+            '<div class="stat"><div class="k">平均客单价（元）</div><div class="v">' +
+            (cnt ? (total / cnt).toFixed(2) : '0.00') + '</div></div>';
+    }
+
+    function renderTable(list) {
+        var html = '';
+        list.forEach(function (d, i) {
+            html += '<tr><td>' + (i + 1) + '</td><td>' + d.storeId + '</td><td>' + d.storeName +
+                '</td><td>' + d.storeRegion + '</td><td>' + fmtMoney(d.salesAmount) +
+                '</td><td>' + d.salesQuantity + '</td><td>' + (d.orderCnt || '-') +
+                '</td><td>' + (d.avgOrderAmount != null ? Number(d.avgOrderAmount).toFixed(2) : '-') + '</td></tr>';
+        });
+        document.querySelector('#dataTable tbody').innerHTML = html ||
+            '<tr><td colspan="8" style="color:#909399">暂无数据</td></tr>';
+    }
+
+    function loadData() {
+        var dt     = $('#dt').val().replace(/-/g, '');
+        var region = $('#region').val();
+        var topN   = $('#topN').val();
+        var type   = $('#chartType').val();
+
+        if (!/^\d{8}$/.test(dt)) { alert('请选择合法的业务日期'); return; }
+
+        var url = '/api/retail/store/salesTop10?dt=' + dt + '&region=' + encodeURIComponent(region) + '&topN=' + topN;
+        $('#apiInfo').text('接口地址：GET ' + url);
+
+        $.get(url, function (res) {
+            if (res.code !== 200 || !res.data || res.data.length === 0) {
+                chart.clear();
+                chart.setOption({
+                    title: { text: '暂无数据（dt=' + dt + '）', left: 'center', top: 'center',
+                             textStyle: { color: '#909399', fontSize: 16 } }
+                });
+                renderStat([]); renderTable([]);
+                return;
+            }
+            var list  = res.data;
+            var names = list.map(function (d) { return d.storeName; });
+            var vals  = list.map(function (d) { return Number(d.salesAmount); });
+
+            renderStat(list);
+            renderTable(list);
+
+            if (type === 'bar') {
+                chart.clear();
+                chart.setOption({
+                    title: { text: '门店销售额 TOP' + list.length + '（dt=' + dt +
+                                   (region === 'all' ? '，全部大区' : '，' + region) + '）',
+                             left: 'center', textStyle: { fontSize: 15 } },
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+                               formatter: function (p) {
+                                   var d = list[p[0].dataIndex];
+                                   return d.storeName + '<br/>销售额：' + fmtMoney(d.salesAmount) + ' 元' +
+                                          '<br/>销量：' + d.salesQuantity + ' 件' +
+                                          '<br/>订单数：' + d.orderCnt +
+                                          '<br/>客单价：' + Number(d.avgOrderAmount).toFixed(2) + ' 元';
+                               } },
+                    grid: { left: '3%', right: '5%', bottom: '14%', top: 60, containLabel: true },
+                    xAxis: { type: 'category', data: names,
+                             axisLabel: { rotate: 30, interval: 0, fontSize: 11 } },
+                    yAxis: { type: 'value', name: '销售额(元)',
+                             axisLabel: { formatter: function (v) { return v; } } },
+                    series: [{
+                        name: '销售额', type: 'bar', data: vals, barMaxWidth: 46,
+                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1,
+                                     [{ offset: 0, color: '#5b9ee4' }, { offset: 1, color: '#2f7ed8' }]),
+                                     borderRadius: [4, 4, 0, 0] },
+                        label: { show: true, position: 'top', fontSize: 10,
+                                 formatter: function (p) { return Number(p.value).toFixed(0); } }
+                    }]
+                });
+            } else {
+                var pieData = list.map(function (d) { return { name: d.storeName, value: Number(d.salesAmount) }; });
+                chart.clear();
+                chart.setOption({
+                    title: { text: '门店销售额占比（dt=' + dt + '）', left: 'center',
+                             textStyle: { fontSize: 15 } },
+                    tooltip: { trigger: 'item',
+                               formatter: function (p) { return p.name + '<br/>销售额：' + fmtMoney(p.value) + ' 元（' + p.percent + '%）'; } },
+                    legend: { type: 'scroll', orient: 'vertical', right: 20, top: 60, bottom: 20 },
+                    series: [{ name: '销售额', type: 'pie', radius: ['38%', '64%'],
+                               center: ['38%', '55%'],
+                               label: { formatter: '{b}\n{d}%', fontSize: 11 },
+                               labelLine: { length: 12, length2: 10 },
+                               data: pieData }]
+                });
+            }
+        }, 'json').fail(function (xhr) {
+            chart.clear();
+            chart.setOption({ title: { text: '接口请求失败：' + xhr.status, left: 'center', top: 'center',
+                                       textStyle: { color: '#f56c6c', fontSize: 16 } } });
+        });
+    }
+
+    $('#queryBtn').click(loadData);
+    $('#chartType').change(loadData);
+    $('#region').change(loadData);
+    $(function () { loadData(); });
+</script>
+</body>
+</html>

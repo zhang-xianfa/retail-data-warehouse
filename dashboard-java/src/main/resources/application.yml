@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: retail-visual
+  # ---------- Hive 数仓数据源（HiveServer2）----------
+  datasource:
+    driver-class-name: org.apache.hive.jdbc.HiveDriver
+    url: jdbc:hive2://hd01:10000/hui_min_dws?characterEncoding=UTF-8
+    username: root
+    password:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      # Hive 连接初始化较慢，校验间隔放宽
+      validation-timeout: 5000
+  # ---------- 静态资源 ----------
+  mvc:
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/static/
+  # ---------- 编码 ----------
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  jackson:
+    default-property-inclusion: always
+
+logging:
+  level:
+    root: INFO
+    com.huimin.retail: DEBUG
+    org.apache.hive: WARN
+    org.apache.hadoop: WARN

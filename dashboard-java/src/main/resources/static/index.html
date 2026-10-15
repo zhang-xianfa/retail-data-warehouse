@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>惠民零售集团数据可视化平台</title>
+    <style>
+        body { font-family: "Microsoft YaHei", sans-serif; margin: 0; background: #f2f4f7; color: #303133; }
+        .hero { background: linear-gradient(120deg, #1c5aa0, #2f7ed8 60%, #27ae60);
+                color: #fff; padding: 48px 32px; }
+        .hero h1 { margin: 0; font-size: 28px; }
+        .hero p { margin: 10px 0 0; opacity: .9; font-size: 14px; }
+        .wrap { max-width: 1080px; margin: -28px auto 40px; padding: 0 20px; }
+        .cards { display: flex; gap: 18px; flex-wrap: wrap; }
+        .card { flex: 1 1 300px; background: #fff; border-radius: 10px; padding: 22px;
+                box-shadow: 0 2px 10px rgba(0,0,0,.08); text-decoration: none; color: inherit;
+                transition: transform .15s, box-shadow .15s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.13); }
+        .card h3 { margin: 0 0 8px; font-size: 17px; color: #2f7ed8; }
+        .card p { margin: 0; font-size: 13px; color: #606266; line-height: 1.7; }
+        .meta { margin-top: 14px; font-size: 12px; color: #909399; }
+        .api { max-width: 1080px; margin: 0 auto 40px; padding: 0 20px; }
+        .api table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px;
+                     border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+        .api th, .api td { padding: 10px 14px; border-bottom: 1px solid #ebeef5; text-align: left; }
+        .api th { background: #f5f7fa; color: #606266; }
+        .api code { font-family: Consolas, monospace; color: #c0392b; }
+    </style>
+</head>
+<body>
+<div class="hero">
+    <h1>惠民零售集团 · 经营数据可视化平台</h1>
+    <p>数据链路：MySQL 业务库 + POS 日志 → Flume / Sqoop 采集 → Hive ODS → DWD → DWS → Spring Boot 接口 → ECharts 可视化</p>
+</div>
+
+<div class="wrap">
+    <div class="cards">
+        <a class="card" href="html/storeSalesTop10.html">
+            <h3>门店销售额 TOP10</h3>
+            <p>按业务日期与大区筛选，查看门店销售额排名，支持柱状图与饼图切换，并展示销量、订单数、客单价明细。</p>
+            <div class="meta">数据表：hui_min_dws.dws_store_sales_daily</div>
+        </a>
+        <a class="card" href="html/categoryShare.html">
+            <h3>商品品类与热销分析</h3>
+            <p>商品品类销售占比、热销商品 TOP N、支付方式分布与各大区销售对比，四个图表同屏展示。</p>
+            <div class="meta">数据表：hui_min_dwd.dwd_trade_detail</div>
+        </a>
+    </div>
+</div>
+
+<div class="api">
+    <table>
+        <thead><tr><th>接口</th><th>说明</th><th>示例</th></tr></thead>
+        <tbody>
+        <tr><td><code>GET /api/retail/store/salesTop10</code></td><td>门店销售额 TOP N</td>
+            <td><code>?dt=20240520&amp;region=华北&amp;topN=10</code></td></tr>
+        <tr><td><code>GET /api/retail/region/sales</code></td><td>各大区销售汇总</td><td><code>?dt=20240520</code></td></tr>
+        <tr><td><code>GET /api/retail/category/share</code></td><td>品类销售占比</td><td><code>?dt=20240520</code></td></tr>
+        <tr><td><code>GET /api/retail/goods/top10</code></td><td>热销商品 TOP N</td><td><code>?dt=20240520&amp;topN=10</code></td></tr>
+        <tr><td><code>GET /api/retail/pay/dist</code></td><td>支付方式分布</td><td><code>?dt=20240520</code></td></tr>
+        <tr><td><code>GET /api/retail/dates</code></td><td>可用业务日期列表</td><td>—</td></tr>
+        <tr><td><code>GET /api/retail/health</code></td><td>Hive 连接健康检查</td><td>—</td></tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
