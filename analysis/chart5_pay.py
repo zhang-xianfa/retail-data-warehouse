@@ -11,8 +11,8 @@ except Exception:
 import pandas as pd
 from common import *          # noqa: F401,F403
 
-pay = pd.read_csv('clean/pay_clean.csv')
-os.makedirs('charts', exist_ok=True)
+pay = pd.read_csv(CLEAN_DIR / 'pay_clean.csv')
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
 order = ['微信支付', '支付宝', '现金']
 pay['_o'] = pay['pay_type'].map({k: i for i, k in enumerate(order)}).fillna(99)
@@ -43,5 +43,5 @@ for t in autot:
 ax.set_title('各支付方式交易金额占比')
 
 plt.tight_layout()
-plt.savefig('charts/chart5_pay_type.png', bbox_inches='tight')
+plt.savefig(CHARTS_DIR / 'chart5_pay_type.png', bbox_inches='tight')
 print('saved charts/chart5_pay_type.png')

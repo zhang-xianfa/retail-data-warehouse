@@ -11,8 +11,8 @@ except Exception:
 import pandas as pd
 from common import *          # noqa: F401,F403
 
-daily = pd.read_csv('clean/daily_clean.csv', parse_dates=['dt'])
-os.makedirs('charts', exist_ok=True)
+daily = pd.read_csv(CLEAN_DIR / 'daily_clean.csv', parse_dates=['dt'])
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
 wk = daily.loc[~daily['is_weekend'], 'sales_amt'].tolist()
 we = daily.loc[daily['is_weekend'], 'sales_amt'].tolist()
@@ -64,5 +64,5 @@ ax.set_axisbelow(True)
 ax.set_ylim(0, max([v for v in we_avg if v == v] + [0]) * 1.28)
 
 plt.tight_layout()
-plt.savefig('charts/chart6_weekend_effect.png', bbox_inches='tight')
+plt.savefig(CHARTS_DIR / 'chart6_weekend_effect.png', bbox_inches='tight')
 print('saved charts/chart6_weekend_effect.png')

@@ -12,8 +12,8 @@ import numpy as np
 import pandas as pd
 from common import *          # noqa: F401,F403
 
-daily = pd.read_csv('clean/daily_clean.csv', parse_dates=['dt'])
-os.makedirs('charts', exist_ok=True)
+daily = pd.read_csv(CLEAN_DIR / 'daily_clean.csv', parse_dates=['dt'])
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
 d = daily.dropna(subset=['avg_order_amt']).reset_index(drop=True)
 xs = list(range(len(d)))
@@ -72,5 +72,5 @@ ax.legend(handles=[mpatches.Patch(color='#2f7ed8', label='工作日'),
           loc='lower right', fontsize=8.5)
 
 plt.tight_layout()
-plt.savefig('charts/chart7_avg_order.png', bbox_inches='tight')
+plt.savefig(CHARTS_DIR / 'chart7_avg_order.png', bbox_inches='tight')
 print('saved charts/chart7_avg_order.png  (r=%.3f)' % r)

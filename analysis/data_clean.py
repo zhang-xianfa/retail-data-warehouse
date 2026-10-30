@@ -21,8 +21,11 @@ except Exception:
 
 import pandas as pd
 
-RAW = 'data'
-CLEAN = 'clean'
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+RAW = ROOT_DIR / 'data'          # Hive 导出的原始 CSV
+CLEAN = ROOT_DIR / 'data' / 'clean'  # 清洗后的 CSV（与仓库目录结构一致）
 os.makedirs(CLEAN, exist_ok=True)
 
 # Hive 导出的 NULL 可能表现为空串、'NULL' 或 '\N'，统一归为缺失

@@ -11,8 +11,8 @@ except Exception:
 import pandas as pd
 from common import *          # noqa: F401,F403
 
-region = pd.read_csv('clean/region_clean.csv')
-os.makedirs('charts', exist_ok=True)
+region = pd.read_csv(CLEAN_DIR / 'region_clean.csv')
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 total = region['total_sales'].sum()
 
 fig, axes = plt.subplots(1, 3, figsize=(15.5, 5.2))
@@ -60,5 +60,5 @@ for t in autot:
 ax.set_title('各大区销量占比')
 
 plt.tight_layout()
-plt.savefig('charts/chart2_region_sales.png', bbox_inches='tight')
+plt.savefig(CHARTS_DIR / 'chart2_region_sales.png', bbox_inches='tight')
 print('saved charts/chart2_region_sales.png')

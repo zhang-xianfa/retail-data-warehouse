@@ -24,6 +24,7 @@ ODS 分区总数 **300**、总销售额 **400,606.67 元**、总订单 4166 单�
   **完全一致（0 差异）**，并校验残留测试交易 0 条、未匹配门店 0 条
 - **性能优化**：定位到 HiveServer2 查询瓶颈后，开启 `hive.exec.mode.local.auto`
   以规避小数据量下的作业调度开销，接口响应由 **57.2 s 降到 1.6 ~ 3.2 s（约 30 倍）**
+  （定位过程见 [`docs/tuning.md`](docs/tuning.md)）
 
 ## 三、经营分析结论（部分）
 
@@ -31,7 +32,7 @@ ODS 分区总数 **300**、总销售额 **400,606.67 元**、总订单 4166 单�
 |---|---|
 | 周末效应 | 周末日均 **17,963 元** vs 工作日 **11,049 元**，达 **1.63 倍** |
 | 品类 | 家电贡献 **73.1%** 销售额（914 笔 / 292,946 元） |
-| 门店 | store001 单店 **97,087.77 元**，占全区 24.2%，超过整个华南区 |
+| 门店 | store001 单店 **97,087.77 元**，占全区 24.2%，接近整个华南区（101,853.56 元） |
 | 支付 | 现金 / 支付宝 / 微信 各约 **1/3** |
 | 价格 | IQR 异常区间 2,881.94 ~ 23,861.47 元，标记异常 **0 天** |
 
@@ -48,6 +49,13 @@ dashboard-java/              Spring Boot + ECharts 看板
   src/main/java/.../dao/StoreSalesDAO.java    Hive SQL 查询（JDBC 直连 HiveServer2）
   src/main/java/.../controller/AnalysisController.java  7 个分析接口
   src/main/resources/static/                  ECharts 页面
+sql/                         数仓 SQL 参考实现（按实训环境重建）
+  01_ods_ddl.sql             ODS 贴源建表与 dt + store_id 两级分区
+  02_dwd_etl.sql             DWD 明细宽表 ETL（关联 / 编码翻译 / 缺失填充 / 脏数据过滤）
+  03_dws_etl.sql             DWS 门店日销汇总（动态分区一次写出整月）
+  04_quality_reconcile.sql   三层对账与数据质量检查
+docs/
+  tuning.md                  57.2 s → 1.6 ~ 3.2 s 的性能定位过程与调优点
 ```
 
 **Java 看板接口**：`/api/retail/store/salesTop10`、`/region/sales`、`/category/share`、
@@ -56,10 +64,10 @@ dashboard-java/              Spring Boot + ECharts 看板
 ## 五、运行
 
 ```bash
-# Python 分析层
-pip install pandas matplotlib streamlit
-python analysis/data_clean.py
-python analysis/chart1_trend.py        # 依次执行 chart1 ~ chart7
+# Python 分析层（脚本内部按仓库根目录定位路径，从任意目录运行都可以）
+pip install pandas matplotlib seaborn streamlit
+python analysis/data_clean.py          # data/*.csv → data/clean/*.csv
+python analysis/chart1_trend.py        # 依次执行 chart1 ~ chart7 → analysis/charts/
 streamlit run analysis/retail_dashboard.py
 
 # Java 看板（需可用的 HiveServer2，连接串见 application.yml）
@@ -72,5 +80,6 @@ cd dashboard-java && mvn spring-boot:run
 
 - 数据为课程实训用**模拟数据**（由本人编写的数据生成脚本按规则产出），**不含真实客户信息**；
   仓库中只保留聚合结果，未包含任何明细数据。
-- 数仓的 Hive / Spark SQL 脚本属于实训实验内容，未包含在本仓库中——
-  本仓库是其上的**分析层与可视化层**。
+- 数仓的 Hive / Spark SQL 脚本在 `sql/` 下按实训环境重建，字段与逻辑对齐本仓库
+  `data/*.csv` 的聚合口径和 `dashboard-java` 的 DAO 查询，未在编写环境执行；
+  性能定位过程见 `docs/tuning.md`。分析层与可视化层构建在其上。

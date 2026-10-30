@@ -11,8 +11,8 @@ except Exception:
 import pandas as pd
 from common import *          # noqa: F401,F403
 
-goods = pd.read_csv('clean/goods_clean.csv')
-os.makedirs('charts', exist_ok=True)
+goods = pd.read_csv(CLEAN_DIR / 'goods_clean.csv')
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 g = goods.sort_values('total_sales')          # 横向条形图：从小到大排，最长的在最上面
 total = goods['total_sales'].sum()
 
@@ -34,5 +34,5 @@ ax.grid(axis='x', linestyle=':', alpha=.45)
 ax.set_axisbelow(True)
 
 plt.tight_layout()
-plt.savefig('charts/chart3_goods_top10.png', bbox_inches='tight')
+plt.savefig(CHARTS_DIR / 'chart3_goods_top10.png', bbox_inches='tight')
 print('saved charts/chart3_goods_top10.png')

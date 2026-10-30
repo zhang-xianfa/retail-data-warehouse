@@ -11,8 +11,8 @@ except Exception:
 import pandas as pd
 from common import *          # noqa: F401,F403
 
-store = pd.read_csv('clean/store_clean.csv')
-os.makedirs('charts', exist_ok=True)
+store = pd.read_csv(CLEAN_DIR / 'store_clean.csv')
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 s = store.sort_values('total_sales', ascending=False).reset_index(drop=True)
 total = s['total_sales'].sum()
 cum = (s['total_sales'].cumsum() / total * 100).tolist()
@@ -40,5 +40,5 @@ ax2.text(labels[-1], 81.5, '80% 线', ha='right', fontsize=8.5, color='#777777')
 ax1.grid(axis='y', linestyle=':', alpha=.45)
 ax1.set_axisbelow(True)
 plt.tight_layout()
-plt.savefig('charts/chart4_store_top10.png', bbox_inches='tight')
+plt.savefig(CHARTS_DIR / 'chart4_store_top10.png', bbox_inches='tight')
 print('saved charts/chart4_store_top10.png')

@@ -17,8 +17,8 @@ except Exception:
 import pandas as pd
 from common import *          # noqa: F401,F403  —— 必须最先引入以配置中文字体
 
-daily = pd.read_csv('clean/daily_clean.csv', parse_dates=['dt'])
-os.makedirs('charts', exist_ok=True)
+daily = pd.read_csv(CLEAN_DIR / 'daily_clean.csv', parse_dates=['dt'])
+CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
 xs = list(range(len(daily)))
 labels = daily['dt'].dt.strftime('%m-%d').tolist()
@@ -67,5 +67,5 @@ ax2.set_axisbelow(True)
 ax2.set_ylim(0, max(qty) * 1.28)
 
 plt.tight_layout()
-plt.savefig('charts/chart1_daily_sales_trend.png', bbox_inches='tight')
+plt.savefig(CHARTS_DIR / 'chart1_daily_sales_trend.png', bbox_inches='tight')
 print('saved charts/chart1_daily_sales_trend.png')

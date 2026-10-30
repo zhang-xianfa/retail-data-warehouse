@@ -19,7 +19,7 @@ st.set_page_config(page_title='惠民零售集团经营数据看板',
 def load_all():
     d = {}
     for k in ['daily', 'region', 'goods', 'store', 'pay']:
-        d[k] = pd.read_csv('clean/%s_clean.csv' % k,
+        d[k] = pd.read_csv(CLEAN_DIR / ('%s_clean.csv' % k),
                            parse_dates=['dt'] if k == 'daily' else None)
     return d
 
